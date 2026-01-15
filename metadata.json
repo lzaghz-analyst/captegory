@@ -1,0 +1,8 @@
+{
+  "name": "Capture & Categorize",
+  "description": "A smart camera app that organizes photos into albums BEFORE you take them, featuring a gallery-first design and pre-capture organization workflow.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
