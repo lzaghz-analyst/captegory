@@ -33,6 +33,7 @@ const CameraInterface: React.FC<CameraInterfaceProps> = ({ albums, onClose, onCa
   const [timerMode, setTimerMode] = useState<TimerMode>(0);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isFlashActive, setIsFlashActive] = useState(false);
+  const [zoom, setZoom] = useState(1);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -222,8 +223,14 @@ const CameraInterface: React.FC<CameraInterfaceProps> = ({ albums, onClose, onCa
       >
         <video 
           ref={videoRef} autoPlay playsInline muted
-          style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : '', filter: `brightness(${exposure})` }}
-          className="w-full h-full object-cover"
+          style={{ 
+            transform: `${facingMode === 'user' ? 'scaleX(-1)' : ''} scale(${zoom})`, 
+            filter: `brightness(${exposure})`,
+            objectFit: 'cover',
+            width: '100%',
+            height: '100%'
+          }}
+          className="w-full h-full"
         />
         
         {/* Shutter/Flash Overlays */}
@@ -291,7 +298,7 @@ const CameraInterface: React.FC<CameraInterfaceProps> = ({ albums, onClose, onCa
         </div>
 
         {/* Bottom Bar */}
-        <div className="p-6 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-auto flex flex-col items-center">
+        <div className="p-4 pb-8 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-auto flex flex-col items-center overflow-visible">
           {!isRecording && (
             <div className="w-full flex justify-center overflow-x-auto no-scrollbar gap-2 mb-8 h-12 items-center px-4">
               {albums.map((album) => (
@@ -316,7 +323,8 @@ const CameraInterface: React.FC<CameraInterfaceProps> = ({ albums, onClose, onCa
             ))}
           </div>
 
-          <div className="w-full flex items-center justify-around">
+          <div className="w-full flex items-center justify-around mb-4">
+            {/* Gallery Thumbnail */}
             <button 
               onClick={() => sessionPhotos.length > 0 && setShowQuickPreview(true)} 
               className="w-14 h-14 rounded-2xl border-2 bg-zinc-900 overflow-hidden active:scale-90 transition-all"
@@ -326,7 +334,24 @@ const CameraInterface: React.FC<CameraInterfaceProps> = ({ albums, onClose, onCa
                 sessionPhotos[0].startsWith('blob:') ? <video src={sessionPhotos[0]} className="w-full h-full object-cover" /> : <img src={sessionPhotos[0]} className="w-full h-full object-cover" alt="" />
               ) : null}
             </button>
-            
+
+            {/* Zoom Controls */}
+            <div className="flex flex-col items-center gap-2">
+              <button 
+                onClick={() => setZoom(Math.min(zoom + 0.2, 3))}
+                className="w-10 h-10 rounded-full bg-black/40 border border-white/20 text-white text-lg active:scale-90 transition-transform hover:bg-black/60"
+              >
+                +
+              </button>
+              <span className="text-[9px] text-white/60 font-semibold">{zoom.toFixed(1)}x</span>
+              <button 
+                onClick={() => setZoom(Math.max(zoom - 0.2, 1))}
+                className="w-10 h-10 rounded-full bg-black/40 border border-white/20 text-white text-lg active:scale-90 transition-transform hover:bg-black/60"
+              >
+                −
+              </button>
+            </div>
+
             <button onClick={handleShutterPress} disabled={countdown !== null} className="relative active:scale-90 transition-transform disabled:opacity-50">
               <div className={`w-20 h-20 rounded-full border-4 flex items-center justify-center transition-all duration-500 ${isRecording ? 'p-5' : 'p-1'}`} style={{ borderColor: activeThemeColor }}>
                 <div className={`w-full h-full transition-all duration-300 ${isRecording ? 'rounded-lg bg-red-600 animate-pulse' : (captureMode === 'video' ? 'bg-red-600 rounded-full' : 'bg-white rounded-full')}`} />
